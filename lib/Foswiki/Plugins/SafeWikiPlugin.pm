@@ -58,26 +58,36 @@ sub completePageHandler {
     $_[0] =~ s/${CONDITIONAL_IF}(\d+);(.*?)$CONDITIONAL_ENDIF/$condifs[$1]$2<![endif]-->/gs;
 }
 
+sub _expandVARS {
+    my ($regex) = @_;
+    
+    Foswiki::Func::writeDebug("Got '$regex'\n");
+    $regex =~ s/%(SCRIPTURL[A-Z]*)({['"]?([^\}'"]+)['"]?})?%/Foswiki::Func::expandCommonVariables("%$1\{\"$3\"\}%")/gex;
+    Foswiki::Func::writeDebug("Made '$regex'\n");
+
+    return $regex;
+}
+
 sub _filter {
     my ($code, $type) = @_;
 
     if (scalar($Foswiki::cfg{Plugins}{SafeWikiPlugin}{"Unsafe$type"}||'')) {
         unless (defined($FILTEROUT{$type})) {
             # the eval expands $Foswiki::cfg vars
-            $FILTEROUT{$type} =
-              join('|',
-                   map { s/(\$Foswiki::cfg({.*?})+)/eval($1)/ge; qr/($_)/ }
-                     @{$Foswiki::cfg{Plugins}{SafeWikiPlugin}{"Unsafe$type"}});
+            my $regex = join('|',
+               map { s/(\$Foswiki::cfg({.*?})+)/eval($1)/ge; qr/($_)/ }
+                 @{$Foswiki::cfg{Plugins}{SafeWikiPlugin}{"Unsafe$type"}});
+            $FILTEROUT{$type} = _expandVARS($regex);
         }
         return 0 if ($code =~ /$FILTEROUT{$type}/);
     }
     if (scalar($Foswiki::cfg{Plugins}{SafeWikiPlugin}{"Safe$type"}||'')) {
         unless (defined($FILTERIN{$type})) {
             # the eval expands $Foswiki::cfg vars
-            $FILTERIN{$type} =
-              join('|',
-                   map { s/(\$Foswiki::cfg({.*?})+)/eval($1)/ge; qr/($_)/ }
-                     @{$Foswiki::cfg{Plugins}{SafeWikiPlugin}{"Safe$type"}});
+            my $regex = join('|',
+               map { s/(\$Foswiki::cfg({.*?})+)/eval($1)/ge; qr/($_)/ }
+                 @{$Foswiki::cfg{Plugins}{SafeWikiPlugin}{"Safe$type"}});
+            $FILTERIN{$type} = _expandVARS($regex);
         }
         return 0 unless ($code =~ /$FILTERIN{$type}/);
     }

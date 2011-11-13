@@ -25,7 +25,7 @@ $Foswiki::cfg{Plugins}{SafeWikiPlugin}{DisarmHandler} = 'alert("Handler filtered
 # use other Foswiki::cfg variables in the the strings here.
 # Note that you will have to extend this list if you have used
 # <code>{PermittedRedirectHostUrls}</code>
-$Foswiki::cfg{Plugins}{SafeWikiPlugin}{SafeURI} = ['^(|http://(localhost|127\.0\.0\.1)(:\d*)?|$Foswiki::cfg{DefaultUrlHost})/*$Foswiki::cfg{PubUrlPath}/+$Foswiki::cfg{SystemWebName}/+'];
+$Foswiki::cfg{Plugins}{SafeWikiPlugin}{SafeURI} = ['^(|http://(localhost|127\.0\.0\.1)(:\d*)?|$Foswiki::cfg{DefaultUrlHost})/*($Foswiki::cfg{PubUrlPath}|%SCRIPTURLPATH{"view"}%)/+$Foswiki::cfg{SystemWebName}/+'];
 
 # **PERL**
 # Array of perl regular expressions. If any of these match
